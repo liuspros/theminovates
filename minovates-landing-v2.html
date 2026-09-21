@@ -6,6 +6,14 @@
 <title>Minovates | Minds that innovate</title>
 <meta name="description" content="Minovates is a WhatsApp community where developers, designers, creators, business owners and students share work, get real feedback and grow together.">
 <meta name="color-scheme" content="light dark">
+<script>
+(function () {
+  var sys = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  var theme = sys;
+  try { var s = localStorage.getItem('minovates-theme'); if (s === 'light' || s === 'dark') theme = s; } catch (e) {}
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -53,6 +61,9 @@
   --focus: #89F336; --logo-a: #8A8B8E;
 }
 
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-padding-top: env(safe-area-inset-top, 0px); background: var(--bg); -webkit-text-size-adjust: 100%; overflow-x: clip; }
 body {
@@ -97,10 +108,22 @@ p { margin: 0; }
 .nav a:hover { color: var(--ink); border-bottom-color: var(--lime); }
 @media (min-width: 900px) { .nav { display: flex; } }
 .site-header .btn { flex: none; }
+.header-actions { display: flex; align-items: center; gap: 12px; flex: none; }
+.theme-toggle {
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex: none; cursor: pointer;
+  background: var(--card); border: 1px solid var(--line); color: var(--ink); padding: 0;
+}
+.theme-toggle:hover { border-color: var(--ink); }
+.theme-toggle .ic { width: 22px; height: 22px; }
+.theme-toggle .sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .sun { display: block; }
+:root[data-theme="dark"] .theme-toggle .moon { display: none; }
 @media (max-width: 480px) {
   .brand { gap: 8px; } .brand .mark { height: 26px; } .brand-word { font-size: 1.3rem; }
   .site-header .btn--sm { padding: 8px 16px; font-size: 0.95rem; }
+  .header-actions { gap: 8px; }
 }
+@media (max-width: 400px) { .hide-xs { display: none; } }
 
 /* Hero */
 .hero { padding-block: clamp(36px, 6vw, 80px) clamp(56px, 8vw, 96px); overflow-x: clip; }
@@ -304,6 +327,8 @@ p { margin: 0; }
     <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0012 3z"/></symbol>
     <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 01-8 0V4zM8 6H4v1a4 4 0 004 4M16 6h4v1a4 4 0 01-4 4M12 13v4M8 20h8M9.5 17h5"/></symbol>
     <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 13.2A8.5 8.5 0 1110.8 3.5a6.8 6.8 0 009.7 9.7z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/></symbol>
     <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.2M12 17h.01"/></symbol>
   </defs>
 </svg>
@@ -320,7 +345,13 @@ p { margin: 0; }
       <a href="#how">How it works</a>
       <a href="#faq">FAQ</a>
     </nav>
-    <a class="btn btn--sm" href="https://bit.ly/minovates" target="_blank" rel="noopener">Join Minovates</a>
+    <div class="header-actions">
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Dark mode" aria-pressed="false">
+        <svg class="ic moon" aria-hidden="true"><use href="#i-moon"/></svg>
+        <svg class="ic sun" aria-hidden="true"><use href="#i-sun"/></svg>
+      </button>
+      <a class="btn btn--sm" href="https://bit.ly/minovates" target="_blank" rel="noopener">Join<span class="hide-xs">&nbsp;Minovates</span></a>
+    </div>
   </div>
 </header>
 
@@ -640,6 +671,21 @@ p { margin: 0; }
     });
   });
   select('developers');
+
+  var root = document.documentElement;
+  var toggle = document.getElementById('theme-toggle');
+  var meta = document.querySelector('meta[name="color-scheme"]');
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    toggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    if (meta) meta.setAttribute('content', theme);
+  }
+  applyTheme(root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+  toggle.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    try { localStorage.setItem('minovates-theme', next); } catch (e) {}
+  });
 
   var scroller = document.getElementById('scroller');
   Array.prototype.forEach.call(document.querySelectorAll('[data-scroll]'), function (b) {
